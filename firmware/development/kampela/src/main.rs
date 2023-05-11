@@ -28,9 +28,10 @@ static HEAP: Heap = Heap::empty();
 
 use kampela_system::{
     PERIPHERALS, CORE_PERIPHERALS, in_free,
-    devices::{power::measure_voltage, se_rng, touch::{FT6X36_REG_NUM_TOUCHES, LEN_NUM_TOUCHES}},
-    draw::{FrameBuffer, make_text, burning_tank}, 
+    devices::{power::ADC, se_rng, touch::{FT6X36_REG_NUM_TOUCHES, LEN_NUM_TOUCHES}},
+    draw::{FrameBuffer, burning_tank}, 
     init::init_peripherals,
+    parallel::Operation,
     BUF_QUARTER, LINK_1, LINK_2, LINK_DESCRIPTORS, TIMER0_CC0_ICF, NfcXfer, NfcXferBlock,
 };
 
@@ -59,9 +60,8 @@ static mut READER: Option<[u8;5]> = None;
 
 #[alloc_error_handler]
 fn oom(_: Layout) -> ! {
-    loop {
-        panic!("out of memory")
-    }
+    panic!("out of memory!");
+    loop {}
 }
 
 #[panic_handler]
@@ -165,46 +165,25 @@ fn main() -> ! {
         PERIPHERALS.borrow(cs).replace(Some(peripherals));
     });
 
-
-    let mut touch_data = [0; LEN_NUM_TOUCHES];
-    let mut touched = false;
-
     let mut nfc_collector = NfcCollector::new();
     let mut frames: Vec<[u8; 240]> = Vec::new();
-
-//    panic!("was still alive!");
-
-    let mut ui = UI::init();
 
     let mut counter = 0usize;
     let mut counter_frames = 0usize;
 
+    let mut frame_set: Vec<Frame> = Vec::new();
+
+    let mut ui = UI::init();
+
+    let mut adc = ADC::new();
+
     loop {
-//        ui.advance();
-        //nfc.advance();
-        // 4. non-UI loop time
-/*
-        process_nfc_buffer_miller_only(&mut frames, &nfc_buffer, &mut counter);
-//        if !nfc_buffer[80..].starts_with(&[1;10]) {panic!("{:?}", &nfc_buffer[..80])}
-        
-        counter_frames += frames.len();
-        frames.clear();
-        
-        if counter_frames > 5 {
-            panic!("frames: {counter_frames}, counter: {counter}");
-        }
-//        if counter >= 1 {panic!("counter: {counter}")}
-*/
-
-//        panic!("was still alive!");
-
+        adc.advance(());
+        ui.advance(adc.read());
         turn_nfc_collector(&mut nfc_collector, &nfc_buffer);
-        
-//        if let NfcCollector::InProgress{payload_length, decoder_metal} = nfc_collector {
-//            panic!("got part of nfc payload with expected length {payload_length}")
-//        }
-        
-        if let NfcCollector::Done(a) = nfc_collector {
+        process_nfc_buffer_miller_only(&mut frame_set, &nfc_buffer);
+
+      if let NfcCollector::Done(a) = nfc_collector {
             let nfc_payload = process_nfc_payload(a).unwrap();
             panic!("for nfc payload \n{:?}", nfc_payload);
         }
