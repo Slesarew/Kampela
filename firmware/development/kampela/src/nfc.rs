@@ -245,7 +245,7 @@ pub fn turn_nfc_collector_correctly(collector: &mut NfcCollector, nfc_buffer: &[
             }
             else {panic!("can not borrow peripherals, buffer_info: {:?}, got some new frames", buffer_info)}
         }
-    }
+    });
 }
 
 pub enum NfcCollector {

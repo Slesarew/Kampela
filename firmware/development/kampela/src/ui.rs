@@ -1,23 +1,18 @@
 //! Everything high-level related to interfacing with user
 
-use cortex_m::interrupt::free;
-use nalgebra::{linalg::SVD, Affine2, Const, OMatrix, Point2, RowVector1, RowVector3, RowVector6};
+use nalgebra::{Affine2, OMatrix, Point2, RowVector3};
 use alloc::vec::Vec;
 use lazy_static::lazy_static;
 
 use kampela_system::{
-    PERIPHERALS, CORE_PERIPHERALS, in_free, if_in_free,
+    if_in_free,
     devices::{se_rng, touch::{Read, LEN_NUM_TOUCHES, FT6X36_REG_NUM_TOUCHES}},
-    draw::{FrameBuffer, burning_tank}, 
-    init::init_peripherals,
+    draw::FrameBuffer, 
     parallel::Operation,
-    BUF_QUARTER, LINK_1, LINK_2, LINK_DESCRIPTORS, TIMER0_CC0_ICF, NfcXfer, NfcXferBlock,
 };
 
 use kampela_ui::{display_def::*, uistate, pin::Pincode, platform::Platform};
 use embedded_graphics::prelude::Point;
-
-use efm32pg23_fix::{CorePeripherals, interrupt, Interrupt, NVIC, Peripherals};
 
 /// UI handler
 pub struct UI {
@@ -44,7 +39,7 @@ impl UI {
     pub fn advance(&mut self, voltage: i32) {
         match self.status {
             UIStatus::Listen => self.listen(),
-            UIStatus::DisplayOperation => if self.state.display().advance((voltage)) {
+            UIStatus::DisplayOperation => if self.state.display().advance(voltage) {
                 self.status = UIStatus::Listen;
             },
             UIStatus::TouchOperation(ref mut touch) => {
@@ -68,7 +63,7 @@ impl UI {
             return;
         }
         if self.update.read_slow() {
-            self.state.render::<FrameBuffer>();
+            self.state.render::<FrameBuffer>().expect("guaranteed to work, no errors implemented");
             self.state.display().request_full();
             self.status = UIStatus::DisplayOperation;
             return;

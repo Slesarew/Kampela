@@ -29,9 +29,10 @@ static HEAP: Heap = Heap::empty();
 
 use kampela_system::{
     PERIPHERALS, CORE_PERIPHERALS, in_free,
-    devices::{power::measure_voltage, psram::ExternalPsram, se_rng, touch::{FT6X36_REG_NUM_TOUCHES, LEN_NUM_TOUCHES}},
-    draw::{FrameBuffer, make_text, burning_tank}, 
+    devices::{power::ADC, psram::ExternalPsram, se_rng, touch::{FT6X36_REG_NUM_TOUCHES, LEN_NUM_TOUCHES}},
+    draw::{FrameBuffer, burning_tank}, 
     init::init_peripherals,
+    parallel::Operation,
     BUF_QUARTER, CH_TIM0, LINK_1, LINK_2, LINK_DESCRIPTORS, TIMER0_CC0_ICF, NfcXfer, NfcXferBlock,
 
 };
@@ -65,8 +66,7 @@ static mut READER: Option<[u8;5]> = None;
 
 #[alloc_error_handler]
 fn oom(l: Layout) -> ! {
-    panic!("out of memory: {:?}", l)
-    loop {}
+    panic!("out of memory: {:?}", l);
 }
 
 #[panic_handler]
@@ -168,13 +168,6 @@ fn main() -> ! {
     loop {
         adc.advance(());
         ui.advance(adc.read());
-        turn_nfc_collector(&mut nfc_collector, &nfc_buffer);
-        process_nfc_buffer_miller_only(&mut frame_set, &nfc_buffer);
-
-        if let NfcCollector::Done(a) = nfc_collector {
-            let nfc_payload = process_nfc_payload(a).unwrap();
-            panic!("for nfc payload \n{:?}", nfc_payload);
-        }
 
         turn_nfc_collector_correctly(&mut nfc_collector, &nfc_buffer);
         

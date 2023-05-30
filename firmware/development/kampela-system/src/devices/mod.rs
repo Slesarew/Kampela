@@ -1,7 +1,5 @@
 //! HAL for Kampela devices
 
-use efm32pg23_fix::Peripherals;
-
 pub mod power;
 pub mod psram;
 pub mod display;

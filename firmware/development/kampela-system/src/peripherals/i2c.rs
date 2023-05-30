@@ -18,7 +18,7 @@ pub enum I2CError {
 }
 
 impl From<FreeError> for I2CError {
-    fn from(item: FreeError) -> Self {
+    fn from(_item: FreeError) -> Self {
         Self::PeripheralsLocked
     }
 }
@@ -211,6 +211,7 @@ impl Operation for ReadI2C {
     }
 }
 
+/*
 pub fn read_i2c_sync() -> Result<u8, I2CError> {
     let mut reader = ReadI2C::new();
     loop {
@@ -219,6 +220,7 @@ pub fn read_i2c_sync() -> Result<u8, I2CError> {
         }
     }
 }
+*/
 
 pub fn check_i2c_errors() -> Result<(), I2CError> {
     let mut if_read = None;

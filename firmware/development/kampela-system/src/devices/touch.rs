@@ -2,7 +2,6 @@
 //!
 //! This matches devices::touch blocking flow; TODO: replace that flow with this one
 
-use efm32pg23_fix::Peripherals;
 use crate::peripherals::i2c::{acknowledge_i2c_tx, check_i2c_errors, I2CError, mstop_i2c_wait_and_clear, ReadI2C};
 use crate::parallel::{DELAY, Operation};
 use crate::{in_free, if_in_free};

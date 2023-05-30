@@ -5,8 +5,6 @@ use core::{mem::size_of, ptr::addr_of};
 
 use rand_core::{CryptoRng, Error, RngCore};
 
-use efm32pg23_fix::Peripherals;
-
 use crate::peripherals::se_command::{
     DataTransfer, RxError, SeCommand, SE_COMMAND_TRNG_GET_RANDOM,
     SE_DATATRANSFER_NO_DATA, SE_DATATRANSFER_REALIGN, SE_DATATRANSFER_STOP,
@@ -79,7 +77,7 @@ pub fn random_with_length(len: usize) -> Result<Vec<u8>, RxError> {
         };
         
         in_free(|peripherals| {
-            se_command.execute(peripherals); //TODO: unwrap
+            se_command.execute(peripherals).expect("se_rng communication error");
         }
         );
     }
@@ -103,7 +101,7 @@ pub fn random_with_length(len: usize) -> Result<Vec<u8>, RxError> {
         };
 
         in_free(|peripherals| {
-            se_command.execute(peripherals);
+            se_command.execute(peripherals).expect("se_rng communication error");
         }
         );
     }

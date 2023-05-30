@@ -12,8 +12,6 @@ use embedded_graphics_core::{
 use embedded_graphics::{
     Drawable,
     mono_font::{ascii::FONT_6X10, MonoTextStyle},
-    prelude::Primitive,
-    primitives::{Circle, PrimitiveStyle},
 };
 use embedded_text::{
     alignment::HorizontalAlignment,
@@ -23,12 +21,11 @@ use embedded_text::{
 use kampela_display_common::display_def::*;
 use cortex_m::asm::delay;
 
-use crate::devices::display::{FastDraw, FullDraw, Request, display_is_busy, epaper_draw_stuff_differently, epaper_draw_stuff_quickly, epaper_hw_init_cs, epaper_deep_sleep};
-use crate::devices::power::ADC;
+use crate::devices::display::{FastDraw, FullDraw, Request, epaper_draw_stuff_differently, epaper_hw_init_cs, epaper_deep_sleep};
 
 const SCREEN_SIZE_VALUE: usize = (SCREEN_SIZE_X*SCREEN_SIZE_Y) as usize;
 
-use crate::{if_in_free, in_free, parallel::Operation}; 
+use crate::{in_free, parallel::Operation}; 
 
 #[derive(Debug)]
 pub enum DisplayError {}

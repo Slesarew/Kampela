@@ -12,23 +12,11 @@ use crate::parallel::Operation;
 /// Iterate through this to perform drawing and send display to proper sleep mode
 pub struct Request<R: for <'a> RequestType<Input<'a> = &'a [u8]>> {
     state: RequestState<R>,
-    timer: usize,
 }
 
 pub enum RequestState<R: for <'a> RequestType<Input<'a> = &'a [u8]>> {
     Init(EPDInit),
     Draw(R),
-}
-
-impl <R: for <'a> RequestType<Input<'a> = &'a [u8]>> Request<R> {
-    fn count(&mut self) -> bool {
-        if self.timer == 0 {
-            false
-        } else {
-            self.timer -= 1;
-            true
-        }
-    }
 }
 
 impl <R: for <'a> RequestType<Input<'a> = &'a [u8], Output = bool>> Operation for Request<R> {
@@ -39,13 +27,11 @@ impl <R: for <'a> RequestType<Input<'a> = &'a [u8], Output = bool>> Operation fo
     fn new() -> Self {
         Self {
             state: RequestState::Init(EPDInit::new()),
-            timer: 0,
         }
     }
 
-    fn wind(&mut self, state: RequestState<R>, delay: usize) {
+    fn wind(&mut self, state: RequestState<R>, _delay: usize) {
         self.state = state;
-        self.timer = delay;
     }
 
     fn advance(&mut self, data: Self::Input<'_>) -> bool {
